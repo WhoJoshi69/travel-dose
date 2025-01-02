@@ -20,6 +20,8 @@ interface TripSummaryProps {
   selectedHotel: string;
   onBack: () => void;
   onConfirm: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 export function TripSummary({
@@ -28,6 +30,8 @@ export function TripSummary({
   selectedHotel,
   onBack,
   onConfirm,
+  open,
+  onOpenChange,
 }: TripSummaryProps) {
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -96,12 +100,12 @@ export function TripSummary({
   };
 
   return (
-    <Dialog>
-      <DialogContent>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[600px]">
         <DialogTitle>Trip Summary</DialogTitle>
         <DialogDescription>Review your trip details before confirming</DialogDescription>
         
-        <div className="space-y-6">
+        <div className="space-y-6 py-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Employee Name</p>

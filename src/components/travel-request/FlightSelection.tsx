@@ -30,6 +30,7 @@ export function FlightSelection({ fromCity, toCity, formData, onBack, onNext }: 
   const [selectedFlight, setSelectedFlight] = useState<string | null>(null);
   const [justification, setJustification] = useState("");
   const [showHotelSelection, setShowHotelSelection] = useState(false);
+  const [showTripSummary, setShowTripSummary] = useState(false);
 
   // Get flights for the selected route
   const routeKey = Object.keys(flights).find(key => 
@@ -42,22 +43,6 @@ export function FlightSelection({ fromCity, toCity, formData, onBack, onNext }: 
     : null;
 
   const needsJustification = selectedFlightDetails?.price > (selectedFlightDetails?.expenseLimit || Infinity);
-
-  if (showHotelSelection) {
-    return (
-      <Dialog open={showHotelSelection} onOpenChange={setShowHotelSelection}>
-        <DialogContent className="sm:max-w-[900px]">
-          <HotelSelection
-            city={toCity}
-            formData={formData}
-            selectedFlight={selectedFlight!}
-            onBack={() => setShowHotelSelection(false)}
-            onNext={onNext}
-          />
-        </DialogContent>
-      </Dialog>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -139,6 +124,22 @@ export function FlightSelection({ fromCity, toCity, formData, onBack, onNext }: 
           Next
         </Button>
       </div>
+
+      {showHotelSelection && (
+        <Dialog open={showHotelSelection} onOpenChange={setShowHotelSelection}>
+          <DialogContent className="sm:max-w-[900px]">
+            <HotelSelection
+              city={toCity}
+              formData={formData}
+              selectedFlight={selectedFlight!}
+              onBack={() => setShowHotelSelection(false)}
+              onNext={onNext}
+              showTripSummary={showTripSummary}
+              setShowTripSummary={setShowTripSummary}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 } 

@@ -5,22 +5,16 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { hotels } from "@/data/hotels";
 import { TripSummary } from "@/components/travel-request/TripSummary";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface HotelSelectionProps {
   city: string;
-  formData: {
-    purpose: string;
-    fromCity: string;
-    toCity: string;
-    fromDate?: Date;
-    toDate?: Date;
-    bookingType: "self" | "team" | "other";
-    selectedTravellers: any[];
-    documents: File | null;
-  };
+  formData: any;
   selectedFlight: string;
   onBack: () => void;
   onNext: () => void;
+  showTripSummary: boolean;
+  setShowTripSummary: (show: boolean) => void;
 }
 
 export function HotelSelection({ 
@@ -28,31 +22,38 @@ export function HotelSelection({
   formData,
   selectedFlight,
   onBack, 
-  onNext 
+  onNext,
+  showTripSummary,
+  setShowTripSummary
 }: HotelSelectionProps) {
   const [selectedHotel, setSelectedHotel] = useState<string | null>(null);
   const [occupancyFilter, setOccupancyFilter] = useState<"single" | "double">("single");
-  const [showTripSummary, setShowTripSummary] = useState(false);
 
-  if (showTripSummary && selectedHotel) {
-    return (
-      <TripSummary
-        formData={formData}
-        selectedFlight={selectedFlight}
-        selectedHotel={selectedHotel}
-        onBack={() => setShowTripSummary(false)}
-        onConfirm={onNext}
-      />
-    );
-  }
-
-  const cityHotels = hotels[city] || [];
-  const filteredHotels = cityHotels.filter(hotel => 
-    hotel.occupancyTypes.includes(occupancyFilter)
-  );
+  const handleNext = () => {
+    if (selectedHotel) {
+      setShowTripSummary(true);
+    }
+  };
 
   return (
     <div className="space-y-6 p-4">
+      <Dialog open={showTripSummary} onOpenChange={setShowTripSummary}>
+        <DialogContent className="sm:max-w-[600px]">
+          <TripSummary
+            formData={formData}
+            selectedFlight={selectedFlight}
+            selectedHotel={selectedHotel || ''}
+            onBack={() => setShowTripSummary(false)}
+            onConfirm={() => {
+              setShowTripSummary(false);
+              onNext();
+            }}
+            open={showTripSummary}
+            onOpenChange={setShowTripSummary}
+          />
+        </DialogContent>
+      </Dialog>
+
       <h2 className="text-xl font-semibold">Let's Finalize Your Stay</h2>
 
       <div className="bg-card rounded-lg border shadow-sm">
@@ -67,7 +68,9 @@ export function HotelSelection({
             </tr>
           </thead>
           <tbody>
-            {filteredHotels.map((hotel) => (
+            {hotels[city]?.filter(hotel => 
+              hotel.occupancyTypes.includes(occupancyFilter)
+            ).map((hotel) => (
               <tr key={hotel.id} className="border-b last:border-0">
                 <td className="p-4">{hotel.name}</td>
                 <td className="p-4">{hotel.address}</td>
@@ -112,14 +115,13 @@ export function HotelSelection({
         </div>
       </div>
 
-      <div className="flex justify-end gap-4">
+      <div className="flex justify-end gap-4 mt-6">
         <Button variant="outline" onClick={onBack}>
           Back
         </Button>
         <Button 
-          onClick={() => setShowTripSummary(true)}
+          onClick={handleNext}
           disabled={!selectedHotel}
-          className="bg-green-500 hover:bg-green-600"
         >
           Next
         </Button>
