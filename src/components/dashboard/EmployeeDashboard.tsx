@@ -14,6 +14,7 @@ import { Search, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { TravelRequestForm } from "../travel-request/TravelRequestForm";
 import { fetchTrips } from "@/services/tripService";
+import { TripSummary } from "../travel-request/TripSummary";
 
 interface Trip {
   id: number;
@@ -44,6 +45,8 @@ export function EmployeeDashboard() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<Trip['status']>('ongoing');
+  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
+  const [showTripDetails, setShowTripDetails] = useState(false);
 
   useEffect(() => {
     fetchTripData();
@@ -71,6 +74,11 @@ export function EmployeeDashboard() {
 
   const handleStatusClick = (status: Trip['status']) => {
     setSelectedStatus(status);
+  };
+
+  const handleViewTrip = (trip: Trip) => {
+    setSelectedTrip(trip);
+    setShowTripDetails(true);
   };
 
   return (
@@ -183,7 +191,11 @@ export function EmployeeDashboard() {
                   </TableCell>
                   <TableCell>{trip.purpose}</TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="sm">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => handleViewTrip(trip)}
+                    >
                       View
                     </Button>
                   </TableCell>
@@ -193,6 +205,34 @@ export function EmployeeDashboard() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Trip Summary Dialog */}
+      {selectedTrip && (
+        <Dialog open={showTripDetails} onOpenChange={setShowTripDetails}>
+          <DialogContent className="sm:max-w-[600px]">
+            <TripSummary
+              formData={{
+                purpose: selectedTrip.purpose,
+                fromCity: selectedTrip.from_city,
+                toCity: selectedTrip.to_city,
+                fromDate: new Date(selectedTrip.from_date),
+                toDate: new Date(selectedTrip.to_date),
+                bookingType: selectedTrip.booking_type,
+                selectedTravellers: [],
+                documents: null,
+              }}
+              selectedFlight={selectedTrip.selected_flight_id}
+              selectedHotel={selectedTrip.selected_hotel_id}
+              onBack={() => setShowTripDetails(false)}
+              onConfirm={() => setShowTripDetails(false)}
+              open={showTripDetails}
+              onOpenChange={setShowTripDetails}
+              mode="view"
+              status={selectedTrip.status}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

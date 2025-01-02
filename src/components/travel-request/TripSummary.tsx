@@ -22,6 +22,8 @@ interface TripSummaryProps {
   onConfirm: () => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  mode?: 'create' | 'view';
+  status?: string;
 }
 
 export function TripSummary({
@@ -32,6 +34,8 @@ export function TripSummary({
   onConfirm,
   open,
   onOpenChange,
+  mode = 'create',
+  status
 }: TripSummaryProps) {
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -103,7 +107,9 @@ export function TripSummary({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogTitle>Trip Summary</DialogTitle>
-        <DialogDescription>Review your trip details before confirming</DialogDescription>
+        <DialogDescription>
+          {mode === 'create' ? 'Review your trip details before confirming' : 'Trip request details'}
+        </DialogDescription>
         
         <div className="space-y-6 py-4">
           <div className="grid grid-cols-2 gap-4">
@@ -157,18 +163,20 @@ export function TripSummary({
             </div>
           )}
 
-          <div className="flex justify-end gap-4">
-            <Button variant="outline" onClick={onBack} disabled={isSubmitting}>
-              Back
-            </Button>
-            <Button 
-              onClick={handleConfirm}
-              disabled={isSubmitting}
-              className="bg-green-500 hover:bg-green-600"
-            >
-              {isSubmitting ? "Creating..." : "Confirm"}
-            </Button>
-          </div>
+          {mode === 'create' && (
+            <div className="flex justify-end gap-4">
+              <Button variant="outline" onClick={onBack} disabled={isSubmitting}>
+                Back
+              </Button>
+              <Button 
+                onClick={handleConfirm}
+                disabled={isSubmitting}
+                className="bg-green-500 hover:bg-green-600"
+              >
+                {isSubmitting ? "Creating..." : "Confirm"}
+              </Button>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
