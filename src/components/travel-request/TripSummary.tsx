@@ -40,6 +40,59 @@ export function TripSummary({
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const handleAccept = async () => {
+    // Implement accept logic here
+    console.log('Trip accepted');
+    onConfirm();
+  };
+
+  const handleReject = async () => {
+    // Implement reject logic here
+    console.log('Trip rejected');
+    onConfirm();
+  };
+
+  const renderActionButtons = () => {
+    if (mode === 'create') {
+      return (
+        <div className="flex justify-end gap-4">
+          <Button variant="outline" onClick={onBack} disabled={isSubmitting}>
+            Back
+          </Button>
+          <Button 
+            onClick={handleConfirm}
+            disabled={isSubmitting}
+            className="bg-green-500 hover:bg-green-600"
+          >
+            {isSubmitting ? "Creating..." : "Confirm"}
+          </Button>
+        </div>
+      );
+    }
+
+    if (mode === 'view' && status === 'to_be_approved') {
+      return (
+        <div className="flex justify-end gap-4">
+          <Button 
+            variant="outline" 
+            onClick={handleReject}
+            className="bg-red-500 hover:bg-red-600 text-white"
+          >
+            Reject
+          </Button>
+          <Button 
+            onClick={handleAccept}
+            className="bg-green-500 hover:bg-green-600"
+          >
+            Accept
+          </Button>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   const handleConfirm = async () => {
     if (!user) {
       toast({
@@ -163,20 +216,7 @@ export function TripSummary({
             </div>
           )}
 
-          {mode === 'create' && (
-            <div className="flex justify-end gap-4">
-              <Button variant="outline" onClick={onBack} disabled={isSubmitting}>
-                Back
-              </Button>
-              <Button 
-                onClick={handleConfirm}
-                disabled={isSubmitting}
-                className="bg-green-500 hover:bg-green-600"
-              >
-                {isSubmitting ? "Creating..." : "Confirm"}
-              </Button>
-            </div>
-          )}
+          {renderActionButtons()}
         </div>
       </DialogContent>
     </Dialog>
