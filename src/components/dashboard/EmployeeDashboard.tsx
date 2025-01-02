@@ -43,15 +43,16 @@ export function EmployeeDashboard() {
   const [showTravelForm, setShowTravelForm] = useState(false);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedStatus, setSelectedStatus] = useState<Trip['status']>('ongoing');
 
   useEffect(() => {
     fetchTripData();
-  }, [searchQuery]);
+  }, [searchQuery, selectedStatus]);
 
   const fetchTripData = async () => {
     try {
       setLoading(true);
-      const data = await fetchTrips(undefined, undefined, searchQuery);
+      const data = await fetchTrips(selectedStatus, undefined, searchQuery);
       setTrips(data);
     } catch (error) {
       console.error("Error fetching trips:", error);
@@ -66,6 +67,10 @@ export function EmployeeDashboard() {
     rejected: trips.filter(t => t.status === 'rejected').length,
     pending: trips.filter(t => t.status === 'pending').length,
     toBeApproved: trips.filter(t => t.status === 'to_be_approved').length,
+  };
+
+  const handleStatusClick = (status: Trip['status']) => {
+    setSelectedStatus(status);
   };
 
   return (
@@ -99,11 +104,36 @@ export function EmployeeDashboard() {
 
       {/* Status Cards */}
       <div className="grid grid-cols-5 gap-4">
-        <StatusCard title="Ongoing Trips" count={statusCounts.ongoing} isActive />
-        <StatusCard title="Upcoming Trips" count={statusCounts.upcoming} />
-        <StatusCard title="Rejected Trips" count={statusCounts.rejected} />
-        <StatusCard title="Pending Approval" count={statusCounts.pending} />
-        <StatusCard title="To Be Approved" count={statusCounts.toBeApproved} />
+        <StatusCard 
+          title="Ongoing Trips" 
+          count={statusCounts.ongoing} 
+          isActive={selectedStatus === 'ongoing'}
+          onClick={() => handleStatusClick('ongoing')}
+        />
+        <StatusCard 
+          title="Upcoming Trips" 
+          count={statusCounts.upcoming}
+          isActive={selectedStatus === 'upcoming'}
+          onClick={() => handleStatusClick('upcoming')}
+        />
+        <StatusCard 
+          title="Rejected Trips" 
+          count={statusCounts.rejected}
+          isActive={selectedStatus === 'rejected'}
+          onClick={() => handleStatusClick('rejected')}
+        />
+        <StatusCard 
+          title="Pending Approval" 
+          count={statusCounts.pending}
+          isActive={selectedStatus === 'pending'}
+          onClick={() => handleStatusClick('pending')}
+        />
+        <StatusCard 
+          title="To Be Approved" 
+          count={statusCounts.toBeApproved}
+          isActive={selectedStatus === 'to_be_approved'}
+          onClick={() => handleStatusClick('to_be_approved')}
+        />
       </div>
 
       {/* Updated Trips Table */}
