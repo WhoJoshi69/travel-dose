@@ -12,17 +12,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Search, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { fetchTrips } from "@/services/tripService";
 
-interface Expense {
-  id: number;
-  request_date: string;
-  purpose: string;
+interface Expense extends Trip {
   amount: number;
-  status: 'pending' | 'approved' | 'to_be_approved';
-  employee_id: string;
-  employee_email: string;
   requester_name: string;
-  created_at: string;
 }
 
 export function ExpensesDashboard() {
@@ -30,19 +24,31 @@ export function ExpensesDashboard() {
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedStatus, setSelectedStatus] = useState<Expense['status']>('pending');
+  const [selectedStatus, setSelectedStatus] = useState<Trip['status']>('pending');
 
-  // Mock data - replace with actual API call
   useEffect(() => {
-    // Simulating API call
-    setLoading(true);
-    setTimeout(() => {
-      setExpenses([
-        // Add mock expenses here
-      ]);
-      setLoading(false);
-    }, 1000);
+    fetchExpenseData();
   }, [searchQuery, selectedStatus]);
+
+  const fetchExpenseData = async () => {
+    try {
+      setLoading(true);
+      const tripsData = await fetchTrips(selectedStatus, undefined, searchQuery);
+      
+      // Transform trips data to expenses by adding dummy data
+      const expensesData = tripsData.map(trip => ({
+        ...trip,
+        amount: Math.floor(Math.random() * 10000) + 1000, // Random amount between 1000-11000
+        requester_name: trip.employee_email.split('@')[0], // Use email username as requester name
+      }));
+      
+      setExpenses(expensesData);
+    } catch (error) {
+      console.error("Error fetching expenses:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const statusCounts = {
     pending: expenses.filter(e => e.status === 'pending').length,
@@ -50,7 +56,7 @@ export function ExpensesDashboard() {
     toBeApproved: expenses.filter(e => e.status === 'to_be_approved').length,
   };
 
-  const handleStatusClick = (status: Expense['status']) => {
+  const handleStatusClick = (status: Trip['status']) => {
     setSelectedStatus(status);
   };
 
@@ -162,7 +168,7 @@ export function ExpensesDashboard() {
   );
 }
 
-function getStatusColor(status: Expense['status']) {
+function getStatusColor(status: Trip['status']) {
   const colors = {
     pending: 'bg-yellow-100 text-yellow-800',
     approved: 'bg-green-100 text-green-800',
