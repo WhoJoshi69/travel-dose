@@ -4,6 +4,7 @@ from typing import List, Optional
 from .. import models, schemas, database
 from datetime import datetime
 from sqlalchemy import or_
+from sqlalchemy.orm import joinedload
 
 router = APIRouter(prefix="/api/trips", tags=["trips"])
 
@@ -63,6 +64,55 @@ async def get_trips(
         return trips
     except Exception as e:
         logger.error(f"Error fetching trips: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching trips: {str(e)}"
+        ) 
+
+@router.get("/dashboard", response_model=List[schemas.TripResponse])
+async def get_dashboard_trips(
+    db: Session = Depends(database.get_db),
+    status: Optional[str] = Query(None),
+    date_range: Optional[str] = Query(None),
+    search: Optional[str] = Query(None)
+):
+    try:
+        query = db.query(models.TripDetails)
+        
+        if status:
+            query = query.filter(models.TripDetails.status == status)
+            
+        if date_range:
+            today = datetime.now().date()
+            if date_range == "upcoming":
+                query = query.filter(models.TripDetails.from_date > today)
+            elif date_range == "past":
+                query = query.filter(models.TripDetails.to_date < today)
+            elif date_range == "ongoing":
+                query = query.filter(
+                    models.TripDetails.from_date <= today,
+                    models.TripDetails.to_date >= today
+                )
+
+        if search:
+            search_term = f"%{search}%"
+            query = query.filter(
+                or_(
+                    models.TripDetails.purpose.ilike(search_term),
+                    models.TripDetails.from_city.ilike(search_term),
+                    models.TripDetails.to_city.ilike(search_term),
+                    models.TripDetails.employee_id.ilike(search_term),
+                    models.TripDetails.employee_email.ilike(search_term)
+                )
+            )
+        
+        # Include travelers relationship
+        query = query.options(joinedload(models.TripDetails.travelers))
+        
+        trips = query.order_by(models.TripDetails.created_at.desc()).all()
+        return trips
+        
+    except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error fetching trips: {str(e)}"

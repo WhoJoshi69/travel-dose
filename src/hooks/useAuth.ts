@@ -2,9 +2,10 @@ import { create } from 'zustand';
 
 interface User {
   id: number;
+  employeeId: string;
   email: string;
-  employee_id: string;
   designation: string;
+  phone?: string;
   firstName: string;
   lastName: string;
 }
@@ -14,7 +15,16 @@ interface AuthState {
   setUser: (user: User | null) => void;
 }
 
+// Initialize with mock data for development
 export const useAuth = create<AuthState>((set) => ({
-  user: null,
+  user: {
+    id: 1,
+    employeeId: 'EMP123',
+    email: 'john.doe@company.com',
+    designation: 'Software Engineer',
+    phone: '+1 234 567 8900',
+    firstName: 'John',
+    lastName: 'Doe'
+  },
   setUser: (user) => set({ user }),
 })); 

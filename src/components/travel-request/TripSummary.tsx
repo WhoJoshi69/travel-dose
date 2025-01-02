@@ -1,6 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { hotels } from "@/data/hotels";
-import { flights } from "@/data/flights";
+import { createTrip } from "@/services/tripService";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/components/ui/toast";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 interface TripSummaryProps {
   formData: {
@@ -26,112 +29,144 @@ export function TripSummary({
   onBack,
   onConfirm,
 }: TripSummaryProps) {
-  // Add null checks
-  if (!formData || !formData.fromCity || !formData.toCity) {
-    return (
-      <div className="p-4">
-        <p>Missing required travel information</p>
-        <Button variant="outline" onClick={onBack}>
-          Back
-        </Button>
-      </div>
-    );
-  }
+  const { user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Get flight details with null safety
-  const routeKey = Object.keys(flights).find(key => 
-    key.startsWith(formData.fromCity) && key.endsWith(formData.toCity)
-  ) || "";
-  const flightDetails = flights[routeKey]?.find(f => f.id === selectedFlight);
+  const handleConfirm = async () => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create a trip",
+        variant: "destructive",
+      });
+      return;
+    }
 
-  // Get hotel details with null safety
-  const hotelDetails = hotels[formData.toCity]?.find(h => h.id === selectedHotel);
+    try {
+      setIsSubmitting(true);
+
+      const travelers = formData.bookingType === "self" 
+        ? [{ 
+            employee_id: user.employeeId,
+            email: user.email,
+            designation: user.designation
+          }]
+        : formData.selectedTravellers.map(traveler => ({
+            employee_id: traveler.employee_id,
+            email: traveler.email,
+            designation: traveler.designation
+          }));
+
+      const tripData = {
+        purpose: formData.purpose,
+        from_city: formData.fromCity,
+        to_city: formData.toCity,
+        from_date: formData.fromDate?.toISOString().split('T')[0] || "",
+        to_date: formData.toDate?.toISOString().split('T')[0] || "",
+        booking_type: formData.bookingType,
+        selected_flight_id: selectedFlight,
+        selected_hotel_id: selectedHotel,
+        document_url: "",
+        employee_id: user.employeeId,
+        employee_email: user.email,
+        employee_phone: user.phone || "",
+        company: "ACME Corp",
+        travelers: travelers
+      };
+
+      await createTrip(tripData);
+      
+      toast({
+        title: "Success",
+        description: "Trip request created successfully",
+        variant: "success",
+      });
+
+      onConfirm();
+    } catch (error) {
+      console.error("Error creating trip:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create trip request. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Trip Request Details</h2>
+    <Dialog>
+      <DialogContent>
+        <DialogTitle>Trip Summary</DialogTitle>
+        <DialogDescription>Review your trip details before confirming</DialogDescription>
+        
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Employee Name</p>
+              <p className="font-medium">{user?.firstName} {user?.lastName}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Employee ID</p>
+              <p className="font-medium">{user?.employeeId}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Purpose</p>
+              <p className="font-medium">{formData.purpose}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Booking Type</p>
+              <p className="font-medium">{formData.bookingType}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">From</p>
+              <p className="font-medium">{formData.fromCity}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">To</p>
+              <p className="font-medium">{formData.toCity}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Start Date</p>
+              <p className="font-medium">{formData.fromDate?.toLocaleDateString()}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">End Date</p>
+              <p className="font-medium">{formData.toDate?.toLocaleDateString()}</p>
+            </div>
+          </div>
 
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="text-sm text-muted-foreground">Employee Name</p>
-            <p className="font-medium">John Doe</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Employee ID</p>
-            <p className="font-medium">EMP123</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Employee Phone Number</p>
-            <p className="font-medium">+1 234 567 8900</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Employee Email ID</p>
-            <p className="font-medium">john.doe@company.com</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Company</p>
-            <p className="font-medium">ACME Corp</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Trip Start Date</p>
-            <p className="font-medium">
-              {formData.fromDate?.toLocaleDateString()}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Trip End Date</p>
-            <p className="font-medium">
-              {formData.toDate?.toLocaleDateString()}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Purpose of Travel</p>
-            <p className="font-medium">{formData.purpose}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Trip From</p>
-            <p className="font-medium">{formData.fromCity}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Trip To</p>
-            <p className="font-medium">{formData.toCity}</p>
+          {formData.selectedTravellers.length > 0 && (
+            <div>
+              <p className="text-sm text-muted-foreground mb-2">Selected Travelers</p>
+              <div className="flex flex-wrap gap-2">
+                {formData.selectedTravellers.map((traveler) => (
+                  <div
+                    key={traveler.id}
+                    className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm"
+                  >
+                    {traveler.email}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-4">
+            <Button variant="outline" onClick={onBack} disabled={isSubmitting}>
+              Back
+            </Button>
+            <Button 
+              onClick={handleConfirm}
+              disabled={isSubmitting}
+              className="bg-green-500 hover:bg-green-600"
+            >
+              {isSubmitting ? "Creating..." : "Confirm"}
+            </Button>
           </div>
         </div>
-
-        <div>
-          <p className="text-sm text-muted-foreground">Flight Details</p>
-          <p className="font-medium">
-            {flightDetails?.airline} - {flightDetails?.departureTime} to {flightDetails?.arrivalTime}
-          </p>
-        </div>
-
-        <div>
-          <p className="text-sm text-muted-foreground">Hotel Details</p>
-          <p className="font-medium">
-            {hotelDetails?.name} - {hotelDetails?.address}
-          </p>
-        </div>
-
-        {formData.documents && (
-          <div>
-            <p className="text-sm text-muted-foreground">Attached Documents</p>
-            <p className="font-medium">{formData.documents.name}</p>
-          </div>
-        )}
-      </div>
-
-      <div className="flex justify-end gap-4">
-        <Button variant="outline" onClick={onBack}>
-          Back
-        </Button>
-        <Button 
-          onClick={onConfirm}
-          className="bg-green-500 hover:bg-green-600"
-        >
-          Confirm
-        </Button>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 } 
