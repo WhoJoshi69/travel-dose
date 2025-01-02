@@ -21,61 +21,63 @@ export function HotelSelection({ city, onBack, onNext }: HotelSelectionProps) {
   );
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold">
-        Let's Finalize Your Stay
-      </h2>
+    <div className="space-y-6 p-4">
+      <h2 className="text-xl font-semibold">Let's Finalize Your Stay</h2>
 
-      <div className="space-y-4">
-        <Card className="p-4">
-          <table className="w-full">
-            <thead>
-              <tr className="text-left">
-                <th className="py-2">Hotel Name</th>
-                <th>Hotel Address</th>
-                <th>Distance</th>
-                <th>Price</th>
-                <th>Action</th>
+      <div className="bg-card rounded-lg border shadow-sm">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b">
+              <th className="text-left p-4">Hotel Name</th>
+              <th className="text-left p-4">Hotel Address</th>
+              <th className="text-left p-4">Distance</th>
+              <th className="text-left p-4">Price</th>
+              <th className="text-left p-4">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredHotels.map((hotel) => (
+              <tr key={hotel.id} className="border-b last:border-0">
+                <td className="p-4">{hotel.name}</td>
+                <td className="p-4">{hotel.address}</td>
+                <td className="p-4">{hotel.distanceFromAirport}km from Airport</td>
+                <td className="p-4">${hotel.price}/night</td>
+                <td className="p-4">
+                  <Button
+                    variant={selectedHotel === hotel.id ? "default" : "outline"}
+                    onClick={() => setSelectedHotel(hotel.id)}
+                    size="sm"
+                  >
+                    Select
+                  </Button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {filteredHotels.map((hotel) => (
-                <tr key={hotel.id} className="border-t">
-                  <td className="py-3">{hotel.name}</td>
-                  <td>{hotel.address}</td>
-                  <td>{hotel.distanceFromAirport}km from Airport</td>
-                  <td>${hotel.price}/night</td>
-                  <td>
-                    <Button
-                      variant={selectedHotel === hotel.id ? "default" : "outline"}
-                      onClick={() => setSelectedHotel(hotel.id)}
-                      size="sm"
-                    >
-                      Select
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Card>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-        <div className="space-y-2">
-          <p className="text-sm font-medium">Preferences</p>
-          <RadioGroup
-            value={occupancyFilter}
-            onValueChange={(value: "single" | "double") => setOccupancyFilter(value)}
-            className="flex gap-4"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="single" id="single" />
-              <Label htmlFor="single">Single Occupancy</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="double" id="double" />
-              <Label htmlFor="double">Double Occupancy</Label>
-            </div>
-          </RadioGroup>
+      <div className="space-y-2">
+        <p className="font-medium">Preferences</p>
+        <div className="flex gap-6">
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              checked={occupancyFilter === "single"}
+              onChange={() => setOccupancyFilter("single")}
+              className="radio"
+            />
+            Single Occupancy
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              checked={occupancyFilter === "double"}
+              onChange={() => setOccupancyFilter("double")}
+              className="radio"
+            />
+            Double Occupancy
+          </label>
         </div>
       </div>
 
