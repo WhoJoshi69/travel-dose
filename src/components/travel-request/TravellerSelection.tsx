@@ -1,4 +1,8 @@
 import { useState, useEffect } from "react";
+import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -7,11 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
 
 interface User {
   id: number;
@@ -24,7 +23,7 @@ interface TravellerSelectionProps {
   fromCity: string;
   toCity: string;
   onClose: () => void;
-  onSelect: (selectedUsers: User[]) => void;
+  onSelect: (users: User[]) => void;
   defaultSelectedUsers?: User[];
 }
 
@@ -35,13 +34,13 @@ export function TravellerSelection({
   onSelect,
   defaultSelectedUsers = []
 }: TravellerSelectionProps) {
-  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
-  const [selectedUsers, setSelectedUsers] = useState<Set<number>>(
-    new Set(defaultSelectedUsers.map(u => u.id))
-  );
-  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedUsers, setSelectedUsers] = useState<Set<number>>(
+    new Set(defaultSelectedUsers.map(user => user.id))
+  );
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -49,13 +48,21 @@ export function TravellerSelection({
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/users");
+      const response = await fetch("http://localhost:8000/api/users/employees", {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch users');
+      }
       const data = await response.json();
       setUsers(data);
       
-      // Add current user to selection if not already selected
-      if (currentUser && !selectedUsers.has(currentUser.id)) {
-        setSelectedUsers(new Set([currentUser.id]));
+      // Assuming the first user is the current user for now
+      if (data.length > 0) {
+        setCurrentUser(data[0]);
+        setSelectedUsers(new Set([data[0].id]));
       }
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -65,8 +72,8 @@ export function TravellerSelection({
   };
 
   const filteredUsers = users.filter(user => 
-    user.employee_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.employee_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.designation.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -89,6 +96,10 @@ export function TravellerSelection({
     onSelect(selectedUsersList);
     onClose();
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -141,10 +152,10 @@ export function TravellerSelection({
 
       <div className="flex justify-end gap-4">
         <Button variant="outline" onClick={onClose}>
-          Cancel
+          Back
         </Button>
         <Button onClick={handleSubmit}>
-          Confirm Selection ({selectedUsers.size} selected)
+          Next
         </Button>
       </div>
     </div>

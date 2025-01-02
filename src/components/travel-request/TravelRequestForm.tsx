@@ -27,6 +27,8 @@ import {
 } from "@/components/ui/command";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { TravellerSelection } from "./TravellerSelection";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 const travelPurposes = [
   "Meeting with Client",
@@ -73,6 +75,7 @@ export function TravelRequestForm({ onClose }: TravelRequestFormProps) {
   const [fromDate, setFromDate] = useState<Date>();
   const [toDate, setToDate] = useState<Date>();
   const [selectedTravellers, setSelectedTravellers] = useState<User[]>([]);
+  const [bookingType, setBookingType] = useState<"self" | "team" | "other">("self");
 
   const handleNext = () => {
     setCurrentStep((prev) => {
@@ -162,65 +165,82 @@ export function TravelRequestForm({ onClose }: TravelRequestFormProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-8">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="team"
-              checked={isTeamTravel}
-              onCheckedChange={(checked) => setIsTeamTravel(!!checked)}
-            />
-            <label htmlFor="team" className="text-sm">
-              I am travelling with a team
-            </label>
-          </div>
+        <div className="space-y-4">
+          <RadioGroup 
+            value={bookingType} 
+            onValueChange={(value) => {
+              setBookingType(value as "self" | "team" | "other");
+              setSelectedTravellers([]);
+            }}
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="self" id="self" />
+              <Label htmlFor="self">I am travelling alone</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="team" id="team" />
+              <Label htmlFor="team">I am travelling with a team</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="other" id="other" />
+              <Label htmlFor="other">I am booking for someone</Label>
+            </div>
+          </RadioGroup>
 
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="booking"
-              checked={isBookingForOther}
-              onCheckedChange={(checked) => setIsBookingForOther(!!checked)}
-            />
-            <label htmlFor="booking" className="text-sm">
-              I am booking for someone
-            </label>
-          </div>
+          {(bookingType === "team" || bookingType === "other") && (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full">
+                  Select All Travellers
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[900px]">
+                <TravellerSelection
+                  fromCity={fromCity}
+                  toCity={toCity}
+                  onClose={() => {
+                    const dialogTrigger = document.querySelector('[aria-label="Close"]');
+                    if (dialogTrigger instanceof HTMLButtonElement) {
+                      dialogTrigger.click();
+                    }
+                  }}
+                  onSelect={setSelectedTravellers}
+                  defaultSelectedUsers={selectedTravellers}
+                />
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
 
-        {(isTeamTravel || isBookingForOther) && (
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="w-full">
-                Select All Travellers
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[900px]">
-              <TravellerSelection
-                fromCity={fromCity}
-                toCity={toCity}
-                onClose={() => {
-                  const dialogTrigger = document.querySelector('[aria-label="Close"]');
-                  if (dialogTrigger instanceof HTMLButtonElement) {
-                    dialogTrigger.click();
-                  }
-                }}
-                onSelect={(selectedUsers) => {
-                  setSelectedTravellers(selectedUsers);
-                  const dialogTrigger = document.querySelector('[aria-label="Close"]');
-                  if (dialogTrigger instanceof HTMLButtonElement) {
-                    dialogTrigger.click();
-                  }
-                }}
-                defaultSelectedUsers={selectedTravellers}
-              />
-            </DialogContent>
-          </Dialog>
-        )}
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="documents" className="text-sm font-medium">
+              Attach Relevant Documents
+            </label>
+            <Input
+              id="documents"
+              type="file"
+              multiple
+              className="cursor-pointer"
+            />
+          </div>
 
-        <div className="flex justify-end gap-4 pt-4">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
+          {(isTeamTravel || isBookingForOther) && selectedTravellers.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {selectedTravellers.map((traveller) => (
+                <div
+                  key={traveller.id}
+                  className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm"
+                >
+                  {traveller.email}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <Button className="w-full" onClick={handleNext}>
+            Next
           </Button>
-          <Button onClick={handleNext}>Next</Button>
         </div>
       </div>
     </div>

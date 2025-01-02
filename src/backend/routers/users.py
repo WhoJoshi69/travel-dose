@@ -30,3 +30,10 @@ async def get_current_user_info(
     current_user: User = Depends(get_current_user)
 ):
     return current_user 
+
+@router.get("/employees", response_model=List[UserResponse])
+async def get_employees(
+    db: Session = Depends(get_db)
+):
+    users = db.query(User).all()
+    return users 

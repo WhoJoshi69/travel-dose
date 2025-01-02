@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Search, Plus } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { TravelRequestForm } from "../travel-request/TravelRequestForm";
 
 interface Trip {
   id: string;
@@ -51,10 +53,22 @@ export function EmployeeDashboard() {
               className="pl-8"
             />
           </div>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Create New Request
-          </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Create New Request
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[900px]">
+              <TravelRequestForm onClose={() => {
+                const dialogTrigger = document.querySelector('[aria-label="Close"]');
+                if (dialogTrigger instanceof HTMLButtonElement) {
+                  dialogTrigger.click();
+                }
+              }} />
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
