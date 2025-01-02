@@ -26,13 +26,25 @@ export function TripSummary({
   onBack,
   onConfirm,
 }: TripSummaryProps) {
-  // Get flight details
+  // Add null checks
+  if (!formData || !formData.fromCity || !formData.toCity) {
+    return (
+      <div className="p-4">
+        <p>Missing required travel information</p>
+        <Button variant="outline" onClick={onBack}>
+          Back
+        </Button>
+      </div>
+    );
+  }
+
+  // Get flight details with null safety
   const routeKey = Object.keys(flights).find(key => 
     key.startsWith(formData.fromCity) && key.endsWith(formData.toCity)
   ) || "";
   const flightDetails = flights[routeKey]?.find(f => f.id === selectedFlight);
-  
-  // Get hotel details
+
+  // Get hotel details with null safety
   const hotelDetails = hotels[formData.toCity]?.find(h => h.id === selectedHotel);
 
   return (

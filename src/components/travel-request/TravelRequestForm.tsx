@@ -95,6 +95,7 @@ export function TravelRequestForm({ onClose }: TravelRequestFormProps) {
           <FlightSelection
             fromCity={formData.fromCity}
             toCity={formData.toCity}
+            formData={formData}
             onBack={() => setShowFlightSelection(false)}
             onNext={() => {
               setShowFlightSelection(false);

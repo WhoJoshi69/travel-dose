@@ -49,6 +49,8 @@ export function FlightSelection({ fromCity, toCity, formData, onBack, onNext }: 
         <DialogContent className="sm:max-w-[900px]">
           <HotelSelection
             city={toCity}
+            formData={formData}
+            selectedFlight={selectedFlight!}
             onBack={() => setShowHotelSelection(false)}
             onNext={onNext}
           />
