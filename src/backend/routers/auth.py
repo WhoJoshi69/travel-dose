@@ -60,10 +60,5 @@ async def login(user: UserLogin, db: Session = Depends(get_db)):
     return {
         "access_token": access_token, 
         "token_type": "bearer",
-        "user": {
-            "id": db_user.id,
-            "email": db_user.email,
-            "employee_id": db_user.employee_id,
-            "designation": db_user.designation
-        }
+        "user": db_user
     } 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { StatusCard } from "./StatusCard";
 import {
@@ -13,23 +13,52 @@ import { Button } from "@/components/ui/button";
 import { Search, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { TravelRequestForm } from "../travel-request/TravelRequestForm";
+import { fetchTrips } from "@/services/tripService";
 
 interface Trip {
-  id: string;
-  requestDate: string;
-  destination: string;
-  startDate: string;
-  endDate: string;
-  approvedBy: string;
+  id: number;
+  request_date: string;
   purpose: string;
-  mode: string;
+  from_city: string;
+  to_city: string;
+  from_date: string;
+  to_date: string;
+  booking_type: "self" | "team" | "other";
+  selected_flight_id: string;
+  selected_hotel_id: string;
+  document_url?: string;
   status: 'ongoing' | 'upcoming' | 'rejected' | 'pending' | 'to_be_approved';
+  approved_by?: string;
+  employee_id: string;
+  employee_email: string;
+  employee_phone?: string;
+  company: string;
+  total_travelers: number;
+  created_at: string;
+  updated_at?: string;
 }
 
 export function EmployeeDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showTravelForm, setShowTravelForm] = useState(false);
-  const [trips] = useState<Trip[]>([]); // You'll fetch this data from your API
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTripData();
+  }, [searchQuery]);
+
+  const fetchTripData = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchTrips(undefined, undefined, searchQuery);
+      setTrips(data);
+    } catch (error) {
+      console.error("Error fetching trips:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const statusCounts = {
     ongoing: trips.filter(t => t.status === 'ongoing').length,
@@ -77,7 +106,7 @@ export function EmployeeDashboard() {
         <StatusCard title="To Be Approved" count={statusCounts.toBeApproved} />
       </div>
 
-      {/* Trips Table */}
+      {/* Updated Trips Table */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -85,37 +114,66 @@ export function EmployeeDashboard() {
               <TableHead className="w-[80px]">S.No.</TableHead>
               <TableHead>Trip ID</TableHead>
               <TableHead>Request Date</TableHead>
-              <TableHead>Destination</TableHead>
+              <TableHead>From</TableHead>
+              <TableHead>To</TableHead>
               <TableHead>Start Date</TableHead>
               <TableHead>End Date</TableHead>
-              <TableHead>Approved By</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Purpose</TableHead>
-              <TableHead>Mode</TableHead>
               <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {trips.map((trip, index) => (
-              <TableRow key={trip.id}>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{trip.id}</TableCell>
-                <TableCell>{trip.requestDate}</TableCell>
-                <TableCell>{trip.destination}</TableCell>
-                <TableCell>{trip.startDate}</TableCell>
-                <TableCell>{trip.endDate}</TableCell>
-                <TableCell>{trip.approvedBy}</TableCell>
-                <TableCell>{trip.purpose}</TableCell>
-                <TableCell>{trip.mode}</TableCell>
-                <TableCell>
-                  <Button variant="ghost" size="sm">
-                    View
-                  </Button>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={10} className="text-center py-4">
+                  Loading...
                 </TableCell>
               </TableRow>
-            ))}
+            ) : trips.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={10} className="text-center py-4">
+                  No trips found
+                </TableCell>
+              </TableRow>
+            ) : (
+              trips.map((trip, index) => (
+                <TableRow key={trip.id}>
+                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>{trip.id}</TableCell>
+                  <TableCell>{new Date(trip.request_date).toLocaleDateString()}</TableCell>
+                  <TableCell>{trip.from_city}</TableCell>
+                  <TableCell>{trip.to_city}</TableCell>
+                  <TableCell>{new Date(trip.from_date).toLocaleDateString()}</TableCell>
+                  <TableCell>{new Date(trip.to_date).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(trip.status)}`}>
+                      {trip.status}
+                    </span>
+                  </TableCell>
+                  <TableCell>{trip.purpose}</TableCell>
+                  <TableCell>
+                    <Button variant="ghost" size="sm">
+                      View
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
     </div>
   );
+}
+
+function getStatusColor(status: Trip['status']) {
+  const colors = {
+    ongoing: 'bg-blue-100 text-blue-800',
+    upcoming: 'bg-purple-100 text-purple-800',
+    rejected: 'bg-red-100 text-red-800',
+    pending: 'bg-yellow-100 text-yellow-800',
+    to_be_approved: 'bg-orange-100 text-orange-800'
+  };
+  return colors[status] || 'bg-gray-100 text-gray-800';
 } 
