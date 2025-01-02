@@ -1,39 +1,26 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
+import logging
 from src.backend.database import get_db
 from src.backend.models import User
-from src.backend.utils import get_current_user
-from pydantic import BaseModel
+from src.backend.schemas import UserResponse
 
 router = APIRouter(prefix="/api/users", tags=["users"])
-
-class UserResponse(BaseModel):
-    id: int
-    email: str
-    employee_id: str
-    designation: str
-    
-    class Config:
-        from_attributes = True
-
-@router.get("/", response_model=List[UserResponse])
-async def get_users(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    users = db.query(User).all()
-    return users
-
-@router.get("/me", response_model=UserResponse)
-async def get_current_user_info(
-    current_user: User = Depends(get_current_user)
-):
-    return current_user 
+logger = logging.getLogger(__name__)
 
 @router.get("/employees", response_model=List[UserResponse])
 async def get_employees(
     db: Session = Depends(get_db)
 ):
-    users = db.query(User).all()
-    return users 
+    try:
+        logger.info("Fetching all employees")
+        users = db.query(User).all()
+        logger.info(f"Found {len(users)} employees")
+        return users
+    except Exception as e:
+        logger.error(f"Error fetching employees: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching employees: {str(e)}"
+        ) 
