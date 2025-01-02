@@ -20,15 +20,14 @@ const pool = mysql.createPool({
 
 app.post('/api/auth/signup', async (req, res) => {
   try {
-    const { email, password, firstName, lastName } = req.body;
+    const { email, password, firstName, lastName, employeeId, designation } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
     
     const [result] = await pool.execute(
-      'INSERT INTO users (email, password_hash, first_name, last_name) VALUES (?, ?, ?, ?)',
-      [email, hashedPassword, firstName, lastName]
+      'INSERT INTO users (email, password_hash, first_name, last_name, employee_id, designation) VALUES (?, ?, ?, ?, ?, ?)',
+      [email, hashedPassword, firstName, lastName, employeeId, designation]
     );
     
-    // Generate access token after successful signup
     const access_token = jwt.sign(
       { userId: result.insertId },
       process.env.JWT_SECRET || 'your-secret-key',
@@ -37,7 +36,15 @@ app.post('/api/auth/signup', async (req, res) => {
     
     res.status(201).json({ 
       message: 'User created successfully',
-      access_token 
+      access_token,
+      user: {
+        id: result.insertId,
+        email,
+        firstName,
+        lastName,
+        employeeId,
+        designation
+      }
     });
   } catch (error) {
     res.status(500).json({ error: 'Error creating user' });

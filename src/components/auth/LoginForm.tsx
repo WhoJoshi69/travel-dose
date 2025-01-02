@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AnimatedInput } from "@/components/ui/animated-input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -13,7 +14,9 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
     lastName: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
+    employeeId: "",
+    designation: ""
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -40,8 +43,8 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
           email: formData.email,
           password: formData.password,
           ...(isLogin ? {} : {
-            firstName: formData.firstName,
-            lastName: formData.lastName,
+            employee_id: formData.employeeId,
+            designation: formData.designation
           }),
         }),
       });
@@ -49,7 +52,7 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "An error occurred");
+        throw new Error(data.detail || data.error || "An error occurred");
       }
 
       localStorage.setItem("token", data.access_token);
@@ -95,7 +98,7 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
               <AnimatedInput
                 id="lastName"
                 label="Last Name"
-                placeholder="Doe"
+                placeholder=""
                 value={formData.lastName}
                 onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                 disabled={loading}
@@ -137,6 +140,40 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
               disabled={loading}
             />
           </div>
+        )}
+        {!isLogin && (
+          <>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="employeeId">Employee ID</Label>
+                <Input
+                  id="employeeId"
+                  value={formData.employeeId}
+                  onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
+                  disabled={loading}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="designation">Designation</Label>
+                <Select 
+                  value={formData.designation}
+                  onValueChange={(value) => setFormData({ ...formData, designation: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select designation" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="software_engineer">Software Engineer</SelectItem>
+                    <SelectItem value="team_lead">Team Lead</SelectItem>
+                    <SelectItem value="project_manager">Project Manager</SelectItem>
+                    <SelectItem value="programmer_analyst">Programmer Analyst</SelectItem>
+                    <SelectItem value="senior_developer">Senior Developer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </>
         )}
         <Button className="w-full" disabled={loading}>
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
