@@ -29,6 +29,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { TravellerSelection } from "./TravellerSelection";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { FlightSelection } from "./FlightSelection";
 
 const travelPurposes = [
   "Meeting with Client",
@@ -67,58 +68,53 @@ interface TravelRequestFormProps {
 }
 
 export function TravelRequestForm({ onClose }: TravelRequestFormProps) {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isTeamTravel, setIsTeamTravel] = useState(false);
-  const [isBookingForOther, setIsBookingForOther] = useState(false);
-  const [fromCity, setFromCity] = useState("");
-  const [toCity, setToCity] = useState("");
-  const [fromDate, setFromDate] = useState<Date>();
-  const [toDate, setToDate] = useState<Date>();
-  const [selectedTravellers, setSelectedTravellers] = useState<User[]>([]);
-  const [bookingType, setBookingType] = useState<"self" | "team" | "other">("self");
+  const [showFlightSelection, setShowFlightSelection] = useState(false);
+  const [formData, setFormData] = useState({
+    purpose: travelPurposes[0],
+    fromCity: "",
+    toCity: "",
+    fromDate: undefined as Date | undefined,
+    toDate: undefined as Date | undefined,
+    bookingType: "self" as "self" | "team" | "other",
+    selectedTravellers: [] as User[],
+    documents: null as File | null,
+  });
 
-  const handleNext = () => {
-    setCurrentStep((prev) => {
-      const nextStep = Math.min(prev + 1, 4);
-      return nextStep;
-    });
+  const handleSubmit = () => {
+    setShowFlightSelection(true);
+    const dialogTrigger = document.querySelector('[aria-label="Close"]');
+    if (dialogTrigger instanceof HTMLButtonElement) {
+      dialogTrigger.click();
+    }
   };
+
+  if (showFlightSelection) {
+    return (
+      <Dialog open={showFlightSelection} onOpenChange={setShowFlightSelection}>
+        <DialogContent className="sm:max-w-[900px]">
+          <FlightSelection
+            fromCity={formData.fromCity}
+            toCity={formData.toCity}
+            onBack={() => setShowFlightSelection(false)}
+            onNext={() => {
+              setShowFlightSelection(false);
+              onClose();
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <div className="space-y-6 p-6">
-      {/* Progress Steps with Animated Trail */}
-      <div className="flex items-center justify-between mb-8 relative">
-        {/* Animated trail line */}
-        <div
-          className="absolute top-4 left-0 h-[2px] bg-primary transition-all duration-500 ease-in-out"
-          style={{
-            width: currentStep === 1 ? "0%" : "33%",
-            transform: `translateX(${(currentStep - 1) * 100}%)`,
-          }}
-        />
-        {/* Background trail */}
-        <div className="absolute top-4 left-0 h-[2px] w-full bg-muted" />
-        
-        {[1, 2, 3, 4].map((step) => (
-          <div key={step} className="relative z-10 flex items-center">
-            <div
-              className={cn(
-                "h-8 w-8 rounded-full flex items-center justify-center text-sm transition-all duration-300",
-                currentStep >= step
-                  ? "bg-primary text-primary-foreground scale-110"
-                  : "bg-muted text-muted-foreground scale-100"
-              )}
-            >
-              {step}
-            </div>
-          </div>
-        ))}
-      </div>
-
       <h2 className="text-2xl font-semibold">Let's Plan Your Travel</h2>
 
       <div className="space-y-4">
-        <Select defaultValue={travelPurposes[0]}>
+        <Select 
+          defaultValue={travelPurposes[0]}
+          onValueChange={(value) => setFormData(prev => ({ ...prev, purpose: value }))}
+        >
           <SelectTrigger>
             <SelectValue placeholder="Select Purpose of Travel" />
           </SelectTrigger>
@@ -136,13 +132,13 @@ export function TravelRequestForm({ onClose }: TravelRequestFormProps) {
             <p className="text-sm font-medium">From</p>
             <div className="grid grid-cols-3 gap-4">
               <CitySelect
-                value={fromCity}
-                onChange={setFromCity}
+                value={formData.fromCity}
+                onChange={(city) => setFormData(prev => ({ ...prev, fromCity: city }))}
                 cities={usCities}
               />
               <DateSelect
-                value={fromDate}
-                onChange={setFromDate}
+                value={formData.fromDate}
+                onChange={(date) => setFormData(prev => ({ ...prev, fromDate: date }))}
               />
               <TimeSelect />
             </div>
@@ -152,13 +148,13 @@ export function TravelRequestForm({ onClose }: TravelRequestFormProps) {
             <p className="text-sm font-medium">To</p>
             <div className="grid grid-cols-3 gap-4">
               <CitySelect
-                value={toCity}
-                onChange={setToCity}
+                value={formData.toCity}
+                onChange={(city) => setFormData(prev => ({ ...prev, toCity: city }))}
                 cities={usCities}
               />
               <DateSelect
-                value={toDate}
-                onChange={setToDate}
+                value={formData.toDate}
+                onChange={(date) => setFormData(prev => ({ ...prev, toDate: date }))}
               />
               <TimeSelect />
             </div>
@@ -167,11 +163,10 @@ export function TravelRequestForm({ onClose }: TravelRequestFormProps) {
 
         <div className="space-y-4">
           <RadioGroup 
-            value={bookingType} 
-            onValueChange={(value) => {
-              setBookingType(value as "self" | "team" | "other");
-              setSelectedTravellers([]);
-            }}
+            value={formData.bookingType}
+            onValueChange={(value: "self" | "team" | "other") => 
+              setFormData(prev => ({ ...prev, bookingType: value, selectedTravellers: [] }))
+            }
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="self" id="self" />
@@ -187,7 +182,7 @@ export function TravelRequestForm({ onClose }: TravelRequestFormProps) {
             </div>
           </RadioGroup>
 
-          {(bookingType === "team" || bookingType === "other") && (
+          {(formData.bookingType === "team" || formData.bookingType === "other") && (
             <Dialog>
               <DialogTrigger asChild>
                 <Button variant="outline" className="w-full">
@@ -196,16 +191,16 @@ export function TravelRequestForm({ onClose }: TravelRequestFormProps) {
               </DialogTrigger>
               <DialogContent className="sm:max-w-[900px]">
                 <TravellerSelection
-                  fromCity={fromCity}
-                  toCity={toCity}
+                  fromCity={formData.fromCity}
+                  toCity={formData.toCity}
                   onClose={() => {
                     const dialogTrigger = document.querySelector('[aria-label="Close"]');
                     if (dialogTrigger instanceof HTMLButtonElement) {
                       dialogTrigger.click();
                     }
                   }}
-                  onSelect={setSelectedTravellers}
-                  defaultSelectedUsers={selectedTravellers}
+                  onSelect={(users) => setFormData(prev => ({ ...prev, selectedTravellers: users }))}
+                  defaultSelectedUsers={formData.selectedTravellers}
                 />
               </DialogContent>
             </Dialog>
@@ -222,12 +217,16 @@ export function TravelRequestForm({ onClose }: TravelRequestFormProps) {
               type="file"
               multiple
               className="cursor-pointer"
+              onChange={(e) => {
+                const file = e.target.files?.[0] || null;
+                setFormData(prev => ({ ...prev, documents: file }));
+              }}
             />
           </div>
 
-          {(isTeamTravel || isBookingForOther) && selectedTravellers.length > 0 && (
+          {formData.selectedTravellers.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {selectedTravellers.map((traveller) => (
+              {formData.selectedTravellers.map((traveller) => (
                 <div
                   key={traveller.id}
                   className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm"
@@ -238,8 +237,8 @@ export function TravelRequestForm({ onClose }: TravelRequestFormProps) {
             </div>
           )}
 
-          <Button className="w-full" onClick={handleNext}>
-            Next
+          <Button className="w-full" onClick={handleSubmit}>
+            Submit
           </Button>
         </div>
       </div>

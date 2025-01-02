@@ -28,6 +28,7 @@ interface Trip {
 
 export function EmployeeDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [showTravelForm, setShowTravelForm] = useState(false);
   const [trips] = useState<Trip[]>([]); // You'll fetch this data from your API
 
   const statusCounts = {
@@ -53,20 +54,15 @@ export function EmployeeDashboard() {
               className="pl-8"
             />
           </div>
-          <Dialog>
+          <Dialog open={showTravelForm} onOpenChange={setShowTravelForm}>
             <DialogTrigger asChild>
-              <Button>
+              <Button onClick={() => setShowTravelForm(true)}>
                 <Plus className="mr-2 h-4 w-4" />
                 Create New Request
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[900px]">
-              <TravelRequestForm onClose={() => {
-                const dialogTrigger = document.querySelector('[aria-label="Close"]');
-                if (dialogTrigger instanceof HTMLButtonElement) {
-                  dialogTrigger.click();
-                }
-              }} />
+              <TravelRequestForm onClose={() => setShowTravelForm(false)} />
             </DialogContent>
           </Dialog>
         </div>
