@@ -21,6 +21,7 @@ interface Expense {
   status: 'pending' | 'approved' | 'to_be_approved';
   employee_id: string;
   employee_email: string;
+  requester_name: string;
   created_at: string;
 }
 
@@ -104,30 +105,31 @@ export function ExpensesDashboard() {
         />
       </div>
 
-      {/* Claims Table */}
+      {/* Updated Expenses Table */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="w-[80px]">S.No.</TableHead>
-              <TableHead>Claim ID</TableHead>
+              <TableHead>Trip ID</TableHead>
               <TableHead>Request Date</TableHead>
+              <TableHead>Request By</TableHead>
               <TableHead>Purpose</TableHead>
               <TableHead>Amount</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="w-[200px]">Actions</TableHead>
+              <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-4">
+                <TableCell colSpan={8} className="text-center py-4">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : expenses.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-4">
+                <TableCell colSpan={8} className="text-center py-4">
                   No claims found
                 </TableCell>
               </TableRow>
@@ -137,6 +139,7 @@ export function ExpensesDashboard() {
                   <TableCell>{index + 1}</TableCell>
                   <TableCell>{expense.id}</TableCell>
                   <TableCell>{new Date(expense.request_date).toLocaleDateString()}</TableCell>
+                  <TableCell>{expense.requester_name}</TableCell>
                   <TableCell>{expense.purpose}</TableCell>
                   <TableCell>${expense.amount}</TableCell>
                   <TableCell>
@@ -144,20 +147,10 @@ export function ExpensesDashboard() {
                       {expense.status}
                     </span>
                   </TableCell>
-                  <TableCell className="space-x-2">
+                  <TableCell>
                     <Button variant="ghost" size="sm">
                       Details
                     </Button>
-                    {expense.status === 'to_be_approved' && (
-                      <>
-                        <Button variant="ghost" size="sm" className="text-green-600">
-                          Approve
-                        </Button>
-                        <Button variant="ghost" size="sm" className="text-red-600">
-                          Reject
-                        </Button>
-                      </>
-                    )}
                   </TableCell>
                 </TableRow>
               ))
