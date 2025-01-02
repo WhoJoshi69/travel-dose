@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/ca
 import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AnimatedInput } from "@/components/ui/animated-input";
 
 export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -72,55 +73,57 @@ export function LoginForm({ onSuccess }: { onSuccess: () => void }) {
             : "Enter your details to sign up"}
         </CardDescription>
       </CardHeader>
-      <form onSubmit={handleSubmit} className="space-y-4 px-6 pb-6">
+      <form onSubmit={handleSubmit} className="space-y-6 px-6 pb-6">
         {error && (
           <div className="text-sm font-medium text-destructive">
             {error}
           </div>
         )}
         {!isLogin && (
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
-              <Input
+          <div className="grid gap-6 md:grid-cols-2">
+            <div>
+              <AnimatedInput
                 id="firstName"
-                placeholder="John"
+                label="First Name"
                 value={formData.firstName}
                 onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                 disabled={loading}
+                required
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input
+            <div>
+              <AnimatedInput
                 id="lastName"
+                label="Last Name"
                 placeholder="Doe"
                 value={formData.lastName}
                 onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                 disabled={loading}
+                required
               />
             </div>
           </div>
         )}
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
+        <div>
+          <AnimatedInput
             id="email"
+            label="Email"
             type="email"
-            placeholder="name@example.com"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             disabled={loading}
+            required
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <Input
+        <div>
+          <AnimatedInput
             id="password"
+            label="Password"
             type="password"
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             disabled={loading}
+            required
           />
         </div>
         {!isLogin && (

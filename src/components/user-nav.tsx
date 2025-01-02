@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User, Settings, Bell, LogOut } from "lucide-react";
+import { MenuThemeToggle } from "@/components/ui/menu-theme-toggle";
 
 interface UserNavProps {
   onLogout: () => void;
@@ -18,7 +19,7 @@ export function UserNav({ onLogout }: UserNavProps) {
   const initials = "JD"; // Get from user data
 
   const handleLogout = () => {
-    localStorage.removeItem("token"); // Clear the auth token
+    localStorage.removeItem("token");
     onLogout();
   };
 
@@ -46,6 +47,8 @@ export function UserNav({ onLogout }: UserNavProps) {
           <Bell className="mr-2 h-4 w-4" />
           Notifications
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <MenuThemeToggle />
         <DropdownMenuSeparator />
         <DropdownMenuItem 
           className="cursor-pointer text-destructive"

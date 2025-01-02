@@ -59,14 +59,87 @@
   }
 }
 
+.inputbox {
+  position: relative;
+  width: 100%;
+}
+
+.inputbox input {
+  position: relative;
+  width: 100%;
+  padding: 15px 10px 8px;
+  background: transparent;
+  outline: none;
+  box-shadow: none;
+  border: none;
+  color: hsl(var(--foreground));
+  font-size: 1em;
+  letter-spacing: 0.05em;
+  transition: all 0.5s;
+  z-index: 10;
+}
+
+.inputbox span {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 15px 10px 8px;
+  font-size: 1em;
+  color: hsl(var(--muted-foreground));
+  letter-spacing: 0.05em;
+  transition: all 0.5s;
+  pointer-events: none;
+  z-index: 9;
+}
+
 .inputbox input:valid ~ span,
 .inputbox input:focus ~ span {
   color: hsl(var(--primary));
-  transform: translateX(-10px) translateY(-34px);
+  transform: translateY(-16px);
   font-size: 0.75em;
+  background: hsl(var(--background));
+  padding: 0 6px;
+  left: 8px;
+  z-index: 11;
+}
+
+.inputbox input:not(:placeholder-shown):not(:focus) ~ span {
+  transform: translateY(-16px);
+  font-size: 0.75em;
+  background: hsl(var(--background));
+  padding: 0 6px;
+  left: 8px;
+  z-index: 11;
+}
+
+.inputbox i {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background: hsl(var(--primary));
+  border-radius: 4px;
+  transition: all 0.5s;
+  pointer-events: none;
 }
 
 .inputbox input:valid ~ i,
 .inputbox input:focus ~ i {
-  height: 44px;
+  height: 100%;
+  background: hsl(var(--accent));
+  opacity: 0.1;
+}
+
+.plane-switch {
+  --dot: hsl(var(--background));
+  --street: hsl(var(--muted));
+  --street-line: hsl(var(--muted-foreground));
+  --street-line-mid: hsl(var(--border));
+  --sky-1: hsl(var(--primary));
+  --sky-2: hsl(var(--primary));
+  --light-1: hsl(var(--accent));
+  --light-2: hsl(var(--accent)/0.3);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
