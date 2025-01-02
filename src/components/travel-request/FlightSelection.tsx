@@ -12,11 +12,21 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 interface FlightSelectionProps {
   fromCity: string;
   toCity: string;
+  formData: {
+    purpose: string;
+    fromCity: string;
+    toCity: string;
+    fromDate?: Date;
+    toDate?: Date;
+    bookingType: "self" | "team" | "other";
+    selectedTravellers: any[];
+    documents: File | null;
+  };
   onBack: () => void;
   onNext: () => void;
 }
 
-export function FlightSelection({ fromCity, toCity, onBack, onNext }: FlightSelectionProps) {
+export function FlightSelection({ fromCity, toCity, formData, onBack, onNext }: FlightSelectionProps) {
   const [selectedFlight, setSelectedFlight] = useState<string | null>(null);
   const [justification, setJustification] = useState("");
   const [showHotelSelection, setShowHotelSelection] = useState(false);

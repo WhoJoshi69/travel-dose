@@ -4,16 +4,47 @@ import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { hotels } from "@/data/hotels";
+import { TripSummary } from "@/components/travel-request/TripSummary";
 
 interface HotelSelectionProps {
   city: string;
+  formData: {
+    purpose: string;
+    fromCity: string;
+    toCity: string;
+    fromDate?: Date;
+    toDate?: Date;
+    bookingType: "self" | "team" | "other";
+    selectedTravellers: any[];
+    documents: File | null;
+  };
+  selectedFlight: string;
   onBack: () => void;
   onNext: () => void;
 }
 
-export function HotelSelection({ city, onBack, onNext }: HotelSelectionProps) {
+export function HotelSelection({ 
+  city, 
+  formData,
+  selectedFlight,
+  onBack, 
+  onNext 
+}: HotelSelectionProps) {
   const [selectedHotel, setSelectedHotel] = useState<string | null>(null);
   const [occupancyFilter, setOccupancyFilter] = useState<"single" | "double">("single");
+  const [showTripSummary, setShowTripSummary] = useState(false);
+
+  if (showTripSummary && selectedHotel) {
+    return (
+      <TripSummary
+        formData={formData}
+        selectedFlight={selectedFlight}
+        selectedHotel={selectedHotel}
+        onBack={() => setShowTripSummary(false)}
+        onConfirm={onNext}
+      />
+    );
+  }
 
   const cityHotels = hotels[city] || [];
   const filteredHotels = cityHotels.filter(hotel => 
@@ -86,7 +117,7 @@ export function HotelSelection({ city, onBack, onNext }: HotelSelectionProps) {
           Back
         </Button>
         <Button 
-          onClick={onNext}
+          onClick={() => setShowTripSummary(true)}
           disabled={!selectedHotel}
           className="bg-green-500 hover:bg-green-600"
         >
