@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Search, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { fetchTrips } from "@/services/tripService";
+import { ExpenseForm } from "./ExpenseForm";
 
 interface Expense extends Trip {
   amount: number;
@@ -25,9 +26,11 @@ export function ExpensesDashboard() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<Trip['status']>('pending');
+  const [trips, setTrips] = useState<Trip[]>([]);
 
   useEffect(() => {
     fetchExpenseData();
+    fetchOngoingTrips();
   }, [searchQuery, selectedStatus]);
 
   const fetchExpenseData = async () => {
@@ -47,6 +50,15 @@ export function ExpensesDashboard() {
       console.error("Error fetching expenses:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchOngoingTrips = async () => {
+    try {
+      const tripsData = await fetchTrips('ongoing', undefined, '');
+      setTrips(tripsData);
+    } catch (error) {
+      console.error("Error fetching ongoing trips:", error);
     }
   };
 
@@ -83,7 +95,10 @@ export function ExpensesDashboard() {
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[900px]">
-              {/* Add ExpenseForm component here */}
+              <ExpenseForm 
+                onClose={() => setShowExpenseForm(false)}
+                trips={trips.filter(t => t.status === 'ongoing')}
+              />
             </DialogContent>
           </Dialog>
         </div>
