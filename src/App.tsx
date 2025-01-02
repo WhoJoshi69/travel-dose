@@ -6,12 +6,17 @@ import { Users, User, Plane } from "lucide-react";
 import { useState } from "react";
 import { UserNav } from "@/components/user-nav";
 import { EmployeeDashboard } from "@/components/dashboard/EmployeeDashboard";
+import { ExpensesDashboard } from "@/components/expenses/ExpensesDashboard";
 import { AnimatedHeader } from "@/components/animated-header";
 import { NavigationDrawer } from "@/components/navigation-drawer";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [selected, setSelected] = useState<"individual" | "organization" | null>(null);
+  const [currentView, setCurrentView] = useState<'trips' | 'expenses' | 'history'>('trips');
+
+  const handleHeaderClick = () => {
+    setCurrentView('trips');
+  };
 
   if (!isAuthenticated) {
     return (
@@ -36,12 +41,21 @@ function App() {
       <div className="min-h-screen w-full bg-background text-foreground antialiased">
         <div className="flex justify-between items-center p-4 border-b">
           <div className="flex items-center gap-4">
-            <NavigationDrawer />
-            <AnimatedHeader />
+            <NavigationDrawer 
+              onViewChange={setCurrentView}
+              currentView={currentView}
+            />
+            <div onClick={handleHeaderClick} className="cursor-pointer">
+              <AnimatedHeader />
+            </div>
           </div>
           <UserNav onLogout={() => setIsAuthenticated(false)} />
         </div>
-        <EmployeeDashboard />
+        {currentView === 'expenses' ? (
+          <ExpensesDashboard />
+        ) : (
+          <EmployeeDashboard />
+        )}
       </div>
     </ThemeProvider>
   );
